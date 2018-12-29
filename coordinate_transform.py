@@ -2,6 +2,9 @@
 """
 This is a sub-module to transform the coordinates from lat.tiff and lon.tiff
 """
+
+__author__ = 'haihuam'
+
 import numpy
 import pickle
 from osgeo import gdal
@@ -56,12 +59,8 @@ def locate_point(lat_value, lon_value):
     lon_data = lon_data_loader()
 
     mapped_lat_data = numpy.where(lat_data > lat_value, 1, 0)
-    # mapped_lon_data = numpy.where(lon_data > lon_value, 1, 0)
-    # new_data = mapped_lat_data + mapped_lon_data
-    # plt.figure('')
-    # plt.imshow(new_data)
-    # plt.show()
     temp_y = numpy.sum(mapped_lat_data, axis=0)
+    temp_y = temp_y - 1
     [temp_x] = numpy.where(temp_y < 2166)
     candidates_list = list(zip(temp_y, temp_x))
     len_candidates = len(candidates_list)
@@ -86,6 +85,7 @@ def load_depth_data_parser(depth_file):
     """
 
     coordinates = list()
+    depths = list()
     with open(depth_file, 'r') as depth_file_handle:
         lines = depth_file_handle.readlines()
         for ln in lines:
@@ -93,8 +93,9 @@ def load_depth_data_parser(depth_file):
             lon_value = ln_splitted[0]
             lat_value = ln_splitted[1]
             depth_value = ln_splitted[2]
+            depths.append(depth_value)
             coordinates.append((lat_value, lon_value))
-    return coordinates
+    return coordinates, depths
 
 
 def load_depth_data_coordinate(coordinates):
@@ -155,7 +156,7 @@ def test():
 
 if __name__ == '__main__':
 
-    coordinates = load_depth_data_parser(DEPTH_DATA_PATH)
+    coordinates, _ = load_depth_data_parser(DEPTH_DATA_PATH)
     index_list = load_depth_data_coordinate(coordinates)
     out_path = dump_points_index(index_list)
     # load_points_index(out_path)
