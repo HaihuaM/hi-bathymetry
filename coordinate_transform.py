@@ -43,27 +43,32 @@ def coordinate_data_loader(tiff_file):
     return xsize, ysize, data_loader
 
 
-def locate_point(lat_value, lon_value):
+def locate_point(lat_value, lon_value, lat_data, lon_data, lat_xsize, lat_ysize):
     """
     Function: locate the index from lat value and lon value
-    parameters: lat value, lon value
+    parameters: lat value, lon value, lat_data, lon_data, lat_xsize, lat_ysize
     returns: the index in tiff file
     # COORDINATE EXAMPLE:
     #     Lon: 121.3386
     #     Lat: 31.56370
     """
-
-    _, _, lat_data_loader = coordinate_data_loader(LAT_TIFF_FILE)
-    lat_data = lat_data_loader()
-    _, _, lon_data_loader = coordinate_data_loader(LON_TIFF_FILE)
-    lon_data = lon_data_loader()
-
-    mapped_lat_data = numpy.where(lat_data > lat_value, 1, 0)
+    mapped_lat_data = numpy.where(lat_data >= lat_value, 1, 0)
+    # mapped_lon_data = numpy.where(lon_data >= lon_value, 1, 0)
+    # plt.figure('lat')
+    # plt.imshow(mapped_lat_data)
+    # plt.figure('lon')
+    # plt.imshow(mapped_lon_data)
+    # plt.figure('lat + lon')
+    # plt.imshow(mapped_lat_data + mapped_lon_data)
+    # plt.show()
+    # import sys
+    # sys.exit(0)
     temp_y = numpy.sum(mapped_lat_data, axis=0)
     temp_y = temp_y - 1
-    [temp_x] = numpy.where(temp_y < 2166)
+    [temp_x] = numpy.where(temp_y < lat_ysize)
     candidates_list = list(zip(temp_y, temp_x))
     len_candidates = len(candidates_list)
+
     for i in range(len_candidates -1):
         index_y = candidates_list[i][0]
         index_x = candidates_list[i][1]
@@ -71,9 +76,11 @@ def locate_point(lat_value, lon_value):
 
         next_index_y = candidates_list[i+1][0]
         next_index_x = candidates_list[i+1][1]
+        
         next_temp_lon_value = lon_data[next_index_y][next_index_x]
         if lon_value > temp_lon_value and lon_value < next_temp_lon_value:
             return [index_y, index_x]
+
     return []
 
 
@@ -104,27 +111,45 @@ def load_depth_data_coordinate(coordinates):
     parameters: list of the lat and lon data
     returns: list of the index for each point
     """
+    lat_xsize, lat_ysize, lat_data_loader = coordinate_data_loader(LAT_TIFF_FILE)
+    lat_data = lat_data_loader()
+    lon_xsize, lon_ysize, lon_data_loader = coordinate_data_loader(LON_TIFF_FILE)
+    lon_data = lon_data_loader()
+    assert(lat_data.shape==lon_data.shape)
+    lat_max = numpy.max(lat_data)
+    lat_min = numpy.min(lat_data)
+    lon_max = numpy.max(lon_data)
+    lon_min = numpy.min(lon_data)
+    print("lat_max: %s, lat_min: %s, lon_max: %s, lon_min: %s"%(lat_max, lat_min, lon_max, lon_min))
+
     index_list = list()
     for coord in tqdm(coordinates):
-        # print(coord)
         lat_value = float(coord[0])
         lon_value = float(coord[1])
-        index = locate_point(lat_value, lon_value)
-        index_list.append(index)
-        # print(index)
+        condition = ((lat_value <= lat_max and lat_value >= lat_min) and (lon_value <= lon_max and lon_value >= lon_min))
+        if condition:
+            index = locate_point(lat_value, lon_value, lat_data, lon_data, lat_xsize, lat_ysize)
+            index_list.append(index)
+            if index:
+                pass
+            else:
+                print("Waring: Cannot locate point:", coord)
+        else:
+            print("Info: Point <lat %s, lon %s> is out of scope" %(lat_value, lon_value))
+
     return index_list
         
 
-def dump_points_index(index_list):
+def obj_dump(dump_obj, file_name='out.dump'):
     """
     Function: dump the index of each point
     parameters: list of the index for each point
     return: path of the file dumped
     """
     time_info  = time_stamp()
-    out_path = op.join(OUTPUT_PATH, 'points_index.info.'+time_info)
+    out_path = op.join(OUTPUT_PATH, '.'.join([file_name, time_info]))
     with open(out_path, 'wb') as points_index_file_handle:
-        pickle.dump(index_list, points_index_file_handle)
+        pickle.dump(dump_obj, points_index_file_handle)
         if op.exists(out_path):
             print('Dump points index information successfully.')
             return out_path
@@ -142,11 +167,30 @@ def load_points_index(points_index_file):
 
 
 def test():
-    LON_VALUE = 121.1890
-    LAT_VALUE = 31.66390
+    lon_value = 121.3450
+    lat_value = 31.61876
+    # 31.61876', '121.3450
 
-    INDEX = locate_point(LAT_VALUE, LON_VALUE)
-    print(INDEX)
+    # ('31.60980', '121.3506')
+    lat_xsize, lat_ysize, lat_data_loader = coordinate_data_loader(LAT_TIFF_FILE)
+    lat_data = lat_data_loader()
+    lon_xsize, lon_ysize, lon_data_loader = coordinate_data_loader(LON_TIFF_FILE)
+    lon_data = lon_data_loader()
+    assert(lat_data.shape==lon_data.shape)
+    lat_max = numpy.max(lat_data)
+    lat_min = numpy.min(lat_data)
+    lon_max = numpy.max(lon_data)
+    lon_min = numpy.min(lon_data)
+
+    print("lat_max: %s, lat_min: %s, lon_max: %s, lon_min: %s"%(lat_max, lat_min, lon_max, lon_min))
+    print(lat_value, lon_value)
+    condition = ((lat_value <= lat_max and lat_value >= lat_min) and (lon_value <= lon_max and lon_value >= lon_min))
+    if condition:
+
+        INDEX = locate_point(lat_value, lon_value, lat_data, lon_data, lat_xsize, lat_ysize)
+        print(INDEX)
+    else:
+        print("Info: Point <lat %s, lon %s> is out of scope" %(lat_value, lon_value))
     # plt.figure('')
     # plt.imshow(lat_data)
     # plt.show()
@@ -158,9 +202,11 @@ if __name__ == '__main__':
 
     coordinates, _ = load_depth_data_parser(DEPTH_DATA_PATH)
     index_list = load_depth_data_coordinate(coordinates)
-    out_path = dump_points_index(index_list)
+    file_name = 'points_index.info'
+    out_path = obj_dump(index_list, file_name)
     # load_points_index(out_path)
     # print(len(index_list))
+    # test()
     
     
 
