@@ -5,6 +5,7 @@ This is a sub-module to utilize the index data to extract pixel value from hyper
 
 __author__ = 'haihuam'
 
+import sys
 import numpy
 import pickle
 from osgeo import gdal
@@ -39,6 +40,9 @@ def extract_pixel_value_func1(points_index_file):
     xsize, ysize, raster_count, geo_data_loader = gdal_reader(GEO_TIFF_FILE)
     geo_data = geo_data_loader()
 
+    func_name = sys._getframe().f_code.co_name
+    out_file_name = '.'.join([func_name, 'data'])
+
     data = list()
     margin = 1
     
@@ -56,7 +60,44 @@ def extract_pixel_value_func1(points_index_file):
 
         index += 1
 
-    obj_dump(data, file_name='func1_point.data')
+    obj_dump(data, file_name=out_file_name)
+
+def extract_pixel_value_func2(points_index_file):
+    """
+    Function: according to the index in the image to extract pixel values from all bands, not use patch only for single point.
+        - compare with func1, it will keep unique [feature: label] pairs
+    parameters: NONE
+    """
+    points_index = load_points_index(points_index_file)
+    _, depths = load_depth_data_parser(DEPTH_DATA_PATH)
+    xsize, ysize, raster_count, geo_data_loader = gdal_reader(GEO_TIFF_FILE)
+    geo_data = geo_data_loader()
+    func_name = sys._getframe().f_code.co_name
+    out_file_name = '.'.join([func_name, 'data'])
+
+    data = list()
+    unique_points_index = list()
+    margin = 1
+    
+    index = 0
+
+    for point in points_index:
+        if point:
+            if point in unique_points_index:
+                pass
+            else:
+                unique_points_index.append(point)
+                index_y = point[0]
+                index_x = point[1]
+                point_pixel_data = geo_data[:, index_y:index_y+margin, index_x: index_x + margin]
+                point_depth_data = float(depths[index])
+                data.append([point_pixel_data, point_depth_data] )
+        else:
+            print("Cannot locate point:", index)
+
+        index += 1
+
+    obj_dump(data, file_name=out_file_name)
 
 
 def mark_labels():
@@ -111,4 +152,4 @@ if __name__ == '__main__':
     # test()
     # mark_labels()
     points_index_file = "points_index.info.20181229_080434"
-    extract_pixel_value(points_index_file)
+    extract_pixel_value_func2(points_index_file)
