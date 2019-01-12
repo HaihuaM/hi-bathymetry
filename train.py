@@ -42,63 +42,6 @@ def data_load_func1(func1_point_data):
     return train_x, test_x, train_y, test_y
 
 
-def train_func1():
-    func1_point_data = "func1_point.data.20190106_091336"
-    train_x, test_x, train_y, test_y = data_load_func1(func1_point_data)
-    checkpoint_dir = "checkpoint_dir_5000_0.001_20190107_022238"
-    # print(train_x.shape)
-    model1 = Model1(train_x, test_x, train_y, test_y)
-    model1.setup_net()
-    model1.continue_on_train(checkpoint_dir, 400)
-
-def train_func2():
-    func2_point_data = "extract_pixel_value_func2.data.20190107_043546"
-    data_load_func2 = data_load_func1
-    train_x, test_x, train_y, test_y = data_load_func2(func2_point_data)
-    checkpoint_dir = "func2_checkpoint_dir_5000_0.001_20190107_044853"
-    checkpoint_dir
-    # print(train_x.shape)
-    model1 = Model1(train_x, test_x, train_y, test_y)
-    model1.setup_net()
-    model1.train(ex_name='func2')
-    # model1.continue_on_train(checkpoint_dir, 5000)
-    # model1.predict(checkpoint_dir)
-
-def train_func3():
-    func2_point_data = "extract_pixel_value_func2.data.20190107_043546"
-    data_load_func2 = data_load_func1
-    train_x, test_x, train_y, test_y = data_load_func2(func2_point_data)
-    checkpoint_dir = "func2_checkpoint_dir_5000_0.001_20190107_044853"
-    checkpoint_dir
-    # print(train_x.shape)
-    model = Model2(train_x, test_x, train_y, test_y, 0.03)
-    model.setup_net()
-    model.train(ex_name='func2')
-    # model1.continue_on_train(checkpoint_dir, 5000)
-    # model1.predict(checkpoint_dir)
-
-def train_func4():
-    func2_point_data = "extract_pixel_value_func2.data.20190107_043546"
-    data_load_func2 = data_load_func1
-    train_x, test_x, train_y, test_y = data_load_func2(func2_point_data)
-    checkpoint_dir = "func2_checkpoint_dir_5000_0.001_20190107_044853"
-    checkpoint_dir
-    # print(train_x.shape)
-    model = Model3(train_x, test_x, train_y, test_y, 0.001)
-    # sys.exit(0)
-    model.setup_net()
-    model.train(ex_name='func2')
-    # model1.continue_on_train(checkpoint_dir, 5000)
-    # model1.predict(checkpoint_dir)
-
-def train_func5():
-    func2_point_data = "extract_pixel_value_func2.data.20190107_043546"
-    data_load_func2 = data_load_func1
-    train_x, test_x, train_y, test_y = data_load_func2(func2_point_data)
-    model = Model4(train_x, test_x, train_y, test_y, 0.001)
-    model.setup_net()
-    model.train(ex_name='func2')
-
 def model_retune(Model, checkpoint_dir):
     func2_point_data = "extract_pixel_value_func2.data.20190107_043546"
     data_load_func2 = data_load_func1
@@ -121,10 +64,11 @@ def model_loader(Model):
 
 
 def train_func():
-    # model_loader(Model1)
-    # model_loader(Model2)
-    retune_model_dir = 'Model1_func2_20190109_090521_retune_1'
-    model_retune(Model1, retune_model_dir)
+    model_loader(Model1)
+    model_loader(Model2)
+    model_loader(Model3)
+    model_loader(Model4)
+    model_loader(Model5)
 
 
 if __name__ == "__main__":
