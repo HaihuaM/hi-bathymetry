@@ -151,6 +151,7 @@ class Model1(object):
         result_file_dir = op.join(checkpoint_dir, 'result')
         with open(result_file_dir, 'w+') as result_file_handle:
             result_file_handle.write(result)
+            result_file_handle.write('\n')
 
     def get_model_path(self, checkpoint_dir):
         from glob import glob
@@ -424,9 +425,6 @@ class Model4(Model1):
         self.mse2 = tf.losses.mean_squared_error(self.ys, prediction)
 
         self.train_step = tf.train.AdamOptimizer(self.lr).minimize(cross_entropy)
-
-
-
 
 
 
