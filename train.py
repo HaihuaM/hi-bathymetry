@@ -14,7 +14,10 @@ from global_envs import *
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 from utility import time_stamp, LQueue
-from models import Model1, Model2, Model3, Model4, Model5
+# from models import Model1, Model2, Model3, Model4, Model5, Model6
+from models import *
+# from models_v2 import Model1
+from models import Model1
 import matplotlib.pyplot as plt
 
 
@@ -58,17 +61,31 @@ def model_loader(Model):
     data_load_func2 = data_load_func1
     train_x, test_x, train_y, test_y = data_load_func2(func2_point_data)
     model = Model(train_x, test_x, train_y, test_y, 0.001)
+    # model.setup_net()
     model.setup_net()
     model.train(ex_name='func2')
 
+def model_predict(Model, checkpoint_dir):
+    func2_point_data = "extract_pixel_value_func2.data.20190107_043546"
+    data_load_func2 = data_load_func1
+    train_x, test_x, train_y, test_y = data_load_func2(func2_point_data)
+    # checkpoint_dir = "func2_checkpoint_dir_5000_0.001_20190107_044853"
+    model = Model(train_x, test_x, train_y, test_y, 0.001)
+    # sys.exit(0)
+    model.setup_net()
+    # model.train(ex_name='func2')
+    model.predict(checkpoint_dir)
 
 
 def train_func():
-    model_loader(Model1)
-    model_loader(Model2)
-    model_loader(Model3)
-    model_loader(Model4)
-    model_loader(Model5)
+    # model_loader(Model1)
+    # model_loader(Model2)
+    # model_loader(Model3)
+    # model_loader(Model4)
+    # model_loader(Model5)
+    # model_loader(Model6)
+    # model_loader(Model10)
+    model_predict(Model10, 'Model10_func2_20190115_065637')
 
 
 if __name__ == "__main__":
