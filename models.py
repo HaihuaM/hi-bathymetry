@@ -18,7 +18,7 @@ from utility import time_stamp, LQueue
 
 class Model1(object):
 
-    def __init__(self, train_x, test_x, train_y, test_y, lr=0.001):
+    def __init__(self, train_x=None, test_x=None, train_y=None, test_y=None, lr=0.001):
         self.info_collector = dict()
         self.model_name = self.__class__.__name__
         self.train_x = train_x
@@ -80,10 +80,10 @@ class Model1(object):
         W_fc2 = self.weight_variable([2048, 1])
         b_fc2 = self.bias_variable([1])
 
-        prediction =  tf.matmul(h_fc1_drop, W_fc2) + b_fc2
+        self.prediction =  tf.matmul(h_fc1_drop, W_fc2) + b_fc2
 
         # c = tf.constant([20])
-        self.mse2 = tf.losses.mean_squared_error(self.ys, prediction)
+        self.mse2 = tf.losses.mean_squared_error(self.ys, self.prediction)
         
 
 
@@ -104,7 +104,7 @@ class Model1(object):
         saver = tf.train.Saver( tf.trainable_variables())
         
 
-        qlen = 4000
+        qlen = 1000
         train_mse_his = LQueue(qlen)
         test_mse_his = LQueue(qlen)
 
@@ -270,7 +270,7 @@ class Model1(object):
         saver.save(sess, op.join(checkpoint_dir_update, self.model_name))
         self.record_result(checkpoint_dir_update)
 
-    def predict(self, checkpoint_dir):
+    def test_predict(self, checkpoint_dir):
         """
         Load the training checkpoint, and implement the predicition.
         """
@@ -280,6 +280,17 @@ class Model1(object):
                     feed_dict={self.xs: self.test_x,
                         self.ys: self.test_y,
                         self.keep_prob: 1.0}))  
+
+    def predict(self, checkpoint_dir):
+        """
+        Load the training checkpoint, and implement the predicition.
+        """
+        sess, saver = self.session_restore(checkpoint_dir)
+        prediction_value = sess.run(self.prediction,
+                    feed_dict={ 
+                        self.xs: self.test_x,
+                        self.keep_prob: 1.0})  
+        return prediction_value
 
     def minibatches(self,
             inputs=None,
@@ -338,9 +349,9 @@ class Model2(Model1):
         W_fc2 = self.weight_variable([2048, 1])
         b_fc2 = self.bias_variable([1])
 
-        prediction =  tf.matmul(h_fc1_drop, W_fc2) + b_fc2
+        self.prediction =  tf.matmul(h_fc1_drop, W_fc2) + b_fc2
 
-        self.mse2 = tf.losses.mean_squared_error(self.ys, prediction)
+        self.mse2 = tf.losses.mean_squared_error(self.ys, self.prediction)
         tf.summary.scalar('mse', self.mse2)
 
         self.merged = tf.summary.merge_all()
@@ -398,10 +409,10 @@ class Model3(Model1):
         W_fc2 = self.weight_variable([4096, 1])
         b_fc2 = self.bias_variable([1])
 
-        prediction =  tf.matmul(h_fc1_drop, W_fc2) + b_fc2
+        self.prediction =  tf.matmul(h_fc1_drop, W_fc2) + b_fc2
 
         # cross_entropy = tf.reduce_mean(tf.reduce_sum(tf.square(self.ys - prediction), reduction_indices=[1]))
-        self.mse2 = tf.losses.mean_squared_error(self.ys, prediction)
+        self.mse2 = tf.losses.mean_squared_error(self.ys, self.prediction)
 
         self.train_step = tf.train.AdamOptimizer(self.lr).minimize(self.mse2)
 
@@ -455,10 +466,10 @@ class Model4(Model1):
         W_fc2 = self.weight_variable([4096, 1])
         b_fc2 = self.bias_variable([1])
 
-        prediction =  tf.matmul(h_fc1_drop, W_fc2) + b_fc2
+        self.prediction =  tf.matmul(h_fc1_drop, W_fc2) + b_fc2
 
         # cross_entropy = tf.reduce_mean(tf.reduce_sum(tf.square(self.ys - prediction), reduction_indices=[1]))
-        self.mse2 = tf.losses.mean_squared_error(self.ys, prediction)
+        self.mse2 = tf.losses.mean_squared_error(self.ys, self.prediction)
 
         self.train_step = tf.train.AdamOptimizer(self.lr).minimize(self.mse2)
 
@@ -512,10 +523,10 @@ class Model8(Model1):
         W_fc2 = self.weight_variable([4096, 1])
         b_fc2 = self.bias_variable([1])
 
-        prediction =  tf.matmul(h_fc1_drop, W_fc2) + b_fc2
+        self.prediction =  tf.matmul(h_fc1_drop, W_fc2) + b_fc2
 
         # cross_entropy = tf.reduce_mean(tf.reduce_sum(tf.square(self.ys - prediction), reduction_indices=[1]))
-        self.mse2 = tf.losses.mean_squared_error(self.ys, prediction)
+        self.mse2 = tf.losses.mean_squared_error(self.ys, self.prediction)
 
         self.train_step = tf.train.AdamOptimizer(self.lr).minimize(self.mse2)
         
@@ -662,10 +673,10 @@ class Model9(Model1):
         W_fc2 = self.weight_variable([4096, 1])
         b_fc2 = self.bias_variable([1])
 
-        prediction =  tf.matmul(h_fc1_drop, W_fc2) + b_fc2
+        self.prediction =  tf.matmul(h_fc1_drop, W_fc2) + b_fc2
 
         # cross_entropy = tf.reduce_mean(tf.reduce_sum(tf.square(self.ys - prediction), reduction_indices=[1]))
-        self.mse2 = tf.losses.mean_squared_error(self.ys, prediction)
+        self.mse2 = tf.losses.mean_squared_error(self.ys, self.prediction)
 
         self.train_step = tf.train.AdamOptimizer(self.lr).minimize(self.mse2)
 
@@ -748,8 +759,8 @@ class Model10(Model1):
         W_fc2 = self.weight_variable([4096, 1])
         b_fc2 = self.bias_variable([1])
 
-        prediction =  tf.matmul(h_fc1_drop, W_fc2) + b_fc2
-        self.mse2 = tf.losses.mean_squared_error(self.ys, prediction)
+        self.prediction =  tf.matmul(h_fc1_drop, W_fc2) + b_fc2
+        self.mse2 = tf.losses.mean_squared_error(self.ys, self.prediction)
         self.train_step = tf.train.AdamOptimizer(self.lr).minimize(self.mse2)
         # sys.exit(0)
 
