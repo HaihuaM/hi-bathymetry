@@ -8,6 +8,7 @@ import os
 import sys
 import time
 import pickle
+import time
 import numpy as np
 import os.path as op
 import tensorflow as tf
@@ -85,15 +86,13 @@ class Model1(object):
         # c = tf.constant([20])
         self.mse2 = tf.losses.mean_squared_error(self.ys, self.prediction)
         
-
-
         self.train_step = tf.train.AdamOptimizer(self.lr).minimize(self.mse2)
 
     def tf_summary(self):
         tf.summary.scalar('mse', self.mse2)
         self.merged = tf.summary.merge_all()
 
-    def train(self, ex_name=''):
+    def train(self, ex_name='', epoch_limit=0):
         """
         Training fuction.
         """
@@ -119,19 +118,26 @@ class Model1(object):
         test_writer = tf.summary.FileWriter(checkpoint_dir + '/plot_test')
 
         epoch = 1
-        # print(self.train_x.shape)
-        # print(self.xs.shape)
+        # index = 0
+        # for item in self.train_x:
+        #     print(self.train_x[index])
+        #     print(self.train_y[index])
+        #     time.sleep(1)
+        #     index += 1
+            
+
         # sys.exit(0)
         while True:
-            sess.run(self.train_step,
-                    feed_dict={self.xs: self.train_x,
+            sess.run(
+                    self.train_step,
+                    feed_dict={
+                        self.xs: self.train_x,
                         self.ys: self.train_y,
                         self.keep_prob: 0.7})
             fetch = {
                     "merged": self.merged,
                     "loss": self.mse2
                     }
-
 
             train_result = sess.run(fetch,
                     feed_dict={self.xs: self.train_x,
@@ -167,8 +173,11 @@ class Model1(object):
                 str(test_mse)])
 
             epoch += 1
-            break_condition = not ( test_mse_is_descrease and train_mse_is_descrease)
-            if break_condition:
+            # break_condition = not ( test_mse_is_descrease and train_mse_is_descrease)
+            # if break_condition:
+            #     break
+
+            if epoch_limit and epoch == epoch_limit:
                 break
 
         self.info_collector['QoR'] = QoR
@@ -272,18 +281,25 @@ class Model1(object):
 
     def test_predict(self, checkpoint_dir):
         """
-        Load the training checkpoint, and implement the predicition.
+        Load the training checkpoint, and implement the prediction.
         """
         sess, saver = self.session_restore(checkpoint_dir)
-        print('MSE2:',
-                sess.run(self.mse2,
-                    feed_dict={self.xs: self.test_x,
-                        self.ys: self.test_y,
-                        self.keep_prob: 1.0}))  
+        
+        fetch = {
+                "prediction": self.prediction,
+                "losses": self.mse2
+                }
+        prediction_value = sess.run(
+                fetch,
+                feed_dict={
+                    self.xs: self.test_x,
+                    self.ys: self.test_y,
+                    self.keep_prob: 1.0}) 
+        return prediction_value
 
     def predict(self, checkpoint_dir):
         """
-        Load the training checkpoint, and implement the predicition.
+        Load the training checkpoint, and implement the prediction.
         """
         sess, saver = self.session_restore(checkpoint_dir)
         prediction_value = sess.run(self.prediction,
@@ -748,15 +764,15 @@ class Model10(Model1):
         # print(concat_layer_flat.get_shape().as_list())
 
         # fc1 layer 
-        W_fc1 = self.weight_variable([144*10, 4096])
-        b_fc1 = self.bias_variable([4096])
+        W_fc1 = self.weight_variable([144*10, 512])
+        b_fc1 = self.bias_variable([512])
         h_fc1 = tf.nn.relu(tf.matmul(concat_layer_flat, W_fc1) + b_fc1)
 
         # fc1 dropout
         h_fc1_drop = tf.nn.dropout(h_fc1, self.keep_prob)
 
         # fc2 layer 
-        W_fc2 = self.weight_variable([4096, 1])
+        W_fc2 = self.weight_variable([512, 1])
         b_fc2 = self.bias_variable([1])
 
         self.prediction =  tf.matmul(h_fc1_drop, W_fc2) + b_fc2
