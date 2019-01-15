@@ -1,30 +1,40 @@
 
 """
-This is the sub-module to load the train model to implement prediction.
+This is the sub-module to do the prediction.
 """
 __author__ = "haihuam"
 
-import os
 import sys
-import numpy as np
-import os.path as op
-import tensorflow as tf
+import numpy
+import pickle
+from osgeo import gdal
 from tqdm import tqdm
+from global_envs import *
 from utility import time_stamp
-from train import Model1, data_load_func1
+from models import *
+from coordinate_transform import gdal_reader, load_depth_data_parser, obj_dump
 import matplotlib.pyplot as plt
 
+def model_predict(Model, checkpoint_dir):
 
-def predict_model1():
-    func1_point_data = "func1_point.data.20190106_091336"
-    checkpoint_dir = "checkpoint_dir_Model1"
-    train_x, test_x, train_y, test_y = data_load_func1(func1_point_data)
-    # print(train_x.shape)
-    model1 = Model1(train_x, test_x, train_y, test_y)
-    model1.setup_net()
-    model1.predict(checkpoint_dir)
 
+    func_name = sys._getframe().f_code.co_name
+    out_file_name = '.'.join([func_name, 'data'])
+
+    xsize, ysize, raster_count, geo_data_loader = gdal_reader(GEO_TIFF_FILE)
+    # print(xsize, ysize)
+    geo_data = geo_data_loader()
+    transposed_data = np.reshape(geo_data, [-1, 330])
+
+    model = Model(test_x=transposed_data)
+    model.setup_net()
+    prediction_value = model.predict(checkpoint_dir)
+    print(prediction_value.shape)
+    data = np.reshape(prediction_value, [ysize, xsize])
+    print(data.shape)
+    obj_dump(data, file_name=out_file_name)
+    
 
 if __name__ == "__main__":
-    predict_model1()
+    model_predict(Model10, 'Model10_func2_20190115_065637')
 
