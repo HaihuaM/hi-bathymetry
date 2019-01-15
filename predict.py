@@ -13,6 +13,7 @@ from global_envs import *
 from utility import time_stamp
 from models import *
 from coordinate_transform import gdal_reader, load_depth_data_parser, obj_dump
+from sklearn import preprocessing
 import matplotlib.pyplot as plt
 
 def model_predict(Model, checkpoint_dir):
@@ -26,6 +27,12 @@ def model_predict(Model, checkpoint_dir):
     geo_data = geo_data_loader()
     transposed_data = np.reshape(geo_data, [-1, 330])
 
+    ss_x = preprocessing.StandardScaler()
+    transposed_data = ss_x.fit_transform(transposed_data)
+
+    print(transposed_data.shape)
+    sys.exit(0)
+
     model = Model(test_x=transposed_data)
     model.setup_net()
     prediction_value = model.predict(checkpoint_dir)
@@ -36,5 +43,5 @@ def model_predict(Model, checkpoint_dir):
     
 
 if __name__ == "__main__":
-    model_predict(Model10, 'Model10_func2_20190115_065637')
+    model_predict(Model10, 'Model10_func2_20190115_103412')
 
