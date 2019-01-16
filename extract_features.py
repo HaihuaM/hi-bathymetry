@@ -7,6 +7,7 @@ __author__ = 'haihuam'
 
 import sys
 import numpy
+import time
 import pickle
 from osgeo import gdal
 from tqdm import tqdm
@@ -91,7 +92,10 @@ def extract_pixel_value_func2(points_index_file):
                 index_x = point[1]
                 point_pixel_data = geo_data[:, index_y:index_y+margin, index_x: index_x + margin]
                 point_depth_data = float(depths[index])
+                # print(point_depth_data)
                 data.append([point_pixel_data, point_depth_data] )
+                print([point_pixel_data, point_depth_data])
+                time.sleep(1)
         else:
             print("Cannot locate point:", index)
 
@@ -127,12 +131,17 @@ def mark_labels():
                 depth = float(depths[index])
                 band[index_y -margin:index_y+margin, index_x -margin : index_x + margin] = depth * 5000
         else:
-            print("Cannot locate point:", index)
+            # print("Cannot locate point:", index)
+            pass
         index += 1
     
     print('duplicate', duplicate)
     plt.figure('')
-    plt.imshow(band)
+    gci = plt.imshow(band)
+    cbar = plt.colorbar(gci) 
+    cbar.set_label('$Depth(m)$')  
+    cbar.set_ticks(numpy.linspace(3000, 70000, 8))  
+    cbar.set_ticklabels( ('0', '10', '20', '30', '40',  '50',  '60',  '70'))
     plt.show()
 
 
@@ -150,6 +159,6 @@ def test():
 
 if __name__ == '__main__':
     # test()
-    # mark_labels()
-    points_index_file = "points_index.info.20181229_080434"
-    extract_pixel_value_func2(points_index_file)
+    mark_labels()
+    # points_index_file = "points_index.info.20181229_080434"
+    # extract_pixel_value_func2(points_index_file)
