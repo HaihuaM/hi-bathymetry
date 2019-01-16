@@ -14,8 +14,9 @@ from tqdm import tqdm
 from global_envs import *
 from utility import time_stamp
 from coordinate_transform import gdal_reader, load_depth_data_parser, obj_dump
-from sklearn.model_selection import train_test_split
+# from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 
 global GEO_TIFF_FILE 
 global DEPTH_DATA_PATH
@@ -108,6 +109,21 @@ def mark_labels():
     """
     Function: to print labels in the hyperspectral image.
     """
+
+
+    tag = numpy.random.randint(0,20,20)
+    tag[10:12] = 0
+    cmap = plt.cm.ocean
+    cmaplist = [cmap(i) for i in range(cmap.N)]
+    cmaplist[0] = (.5,.5,.5,1.0)
+    # create the new map
+    cmap = cmap.from_list('Custom cmap', cmaplist, cmap.N)
+    # define the bins and normalize
+    bounds = numpy.linspace(-1000,70000,21)
+    norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
+
+
+
     xsize, ysize, raster_count, geo_data_loader = gdal_reader(GEO_TIFF_FILE)
     geo_data = geo_data_loader()
     band = numpy.copy(geo_data[90])
@@ -135,9 +151,13 @@ def mark_labels():
             pass
         index += 1
     
+
+
+
+
     print('duplicate', duplicate)
     plt.figure('')
-    gci = plt.imshow(band)
+    gci = plt.imshow(band, cmap=cmap, norm=norm)
     cbar = plt.colorbar(gci) 
     cbar.set_label('$Depth(m)$')  
     cbar.set_ticks(numpy.linspace(3000, 70000, 8))  
