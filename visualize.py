@@ -38,12 +38,13 @@ def show(data_file):
     prediction = load_data(data_file)
     # print(prediction.shape)
     # sys.exit(0)
-    flatened_img = flaten_img(prediction)
+    # flatened_img = flaten_img(prediction)
+    flatened_img = prediction
 
     plt.figure('%s' %data_file)
     plt.imshow(flatened_img, plt.cm.gray)
-    # plt.imshow(flatened_img, cmap=plt.cm.BuPu_r)
-    plt.imshow(flatened_img, cmap=plt.cm.tab10)
+    plt.imshow(flatened_img, cmap=plt.cm.BuPu_r)
+    # plt.imshow(flatened_img, cmap=plt.cm.tab10)
     plt.colorbar()
     plt.show()
 
