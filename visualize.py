@@ -78,19 +78,14 @@ def show(data_file=None):
     cbar.set_ticklabels( ('0', '10', '20', '30', '40',  '50',  '60',  '70'))
 
 
-    # plt.figure('2')
-    # gci_1 = plt.imshow(band)
-    # cbar_1 = plt.colorbar(gci_1) 
-    # cbar_1.set_label('$Depth(m)$')  
-    # cbar_1.set_ticks(np.linspace(3000, 70000, 8))  
-    # cbar_1.set_ticklabels( ('0', '10', '20', '30', '40',  '50',  '60',  '70'))
+    print('Plot %s' %data_file)
+    prediction = load_data(data_file)
+    flatened_img = prediction
 
-    # plt.imshow(depth_data, plt.cm.gray)
-    # plt.imshow(depth_data, plt.cm.gist_ncar)
-    # plt.imshow(compound_img)
-    # plt.imshow(flatened_img, cmap=plt.cm.BuPu_r)
-    # plt.imshow(flatened_img, cmap=plt.cm.tab10)
-    # plt.colorbar()
+    plt.figure('%s' %data_file)
+    plt.imshow(flatened_img, plt.cm.gray)
+    plt.imshow(flatened_img, cmap=plt.cm.BuPu_r)
+    plt.colorbar()
     plt.show()
 
 if __name__ == '__main__':

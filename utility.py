@@ -3,10 +3,19 @@
 Combination of utility functions 
 """
 
+import re
 import time
+import inspect
 
 def time_stamp():
     return time.strftime("%Y%m%d_%H%M%S", time.localtime())
+
+
+def debug_print(x):
+    frame = inspect.currentframe().f_back
+    s = inspect.getframeinfo(frame).code_context[0]
+    r = re.search(r"\((.*)\)", s).group(1)
+    print("{} = {}".format(r,x))
 
 class LQueue(object):
     """

@@ -46,34 +46,27 @@ def model_predict(Model, checkpoint_dir):
     out_file_name = '.'.join([func_name, 'data'])
 
     xsize, ysize, raster_count, geo_data_loader = gdal_reader(GEO_TIFF_FILE)
-    print(xsize, ysize)
+    # print(xsize, ysize)
     geo_data = geo_data_loader()
     transposed_data = np.reshape(geo_data, [-1, 330])
-    # print(transposed_data.shape)
 
-    # func2_point_data = "extract_pixel_value_func2.data.20190107_043546"
-    # data_load_func2 = data_load_func1
-    # train_x, test_x, train_y, test_y = data_load_func2(func2_point_data)
+    predict_data = list()
+    for x in tqdm(transposed_data):
+        feed = np.reshape(x, [-1, 330])
+        # print(feed)
+        model = Model(test_x=feed)
+        model.setup_net()
+        prediction_value = model.predict(checkpoint_dir)
+        predict_data.append(prediction_value)
+        print(prediction_value)
 
-    # ss_x = preprocessing.StandardScaler()
-    # transposed_data = ss_x.fit_transform(transposed_data)
-
-    # print(transposed_data.shape)
-    # sys.exit(0)
-
-    # print(test_x.shape)
-    # sys.exit(0)
-    model = Model(test_x=transposed_data)
-    model.setup_net()
-    prediction_value = model.test_predict(checkpoint_dir)
-    print(prediction_value)
-    print(prediction_value.shape)
-    data = np.reshape(prediction_value, [ysize, xsize])
-    print(data.shape)
+    predict_data = np.arrary([prediction_value])
+    data = np.reshape(predict_data, [2166, 1983])
+    # print(data.shape)
     obj_dump(data, file_name=out_file_name)
     
 
 if __name__ == "__main__":
-    # model_predict(Model10, 'Model10_func2_20190115_103412')
-    model_predict(Model1, 'Model1_func2_20190115_144146')
+    model_predict(Model10, 'Model10_func2_20190115_164056')
+    # model_predict(Model1, 'Model1_func2_20190115_144146')
 
