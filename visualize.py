@@ -7,9 +7,16 @@ import os
 import sys
 import pickle
 import numpy as np
+from global_envs import *
 from osgeo import gdal
 from tqdm import tqdm
 import matplotlib.pyplot as plt
+import matplotlib as mpl
+from coordinate_transform import gdal_reader, load_depth_data_parser, obj_dump
+
+global GEO_TIFF_FILE 
+global DEPTH_DATA_PATH
+global OUTPUT_PATH
 
 
 def flaten_img(img, min_margin = -40, max_margin = 70, gap = 10):
@@ -32,21 +39,60 @@ def load_data(data_file):
         data = pickle.load(data_file_handle)
         return data
 
-def show(data_file):
+def show(data_file=None):
 
-    print('Plot %s' %data_file)
-    prediction = load_data(data_file)
-    # print(prediction.shape)
-    # sys.exit(0)
-    flatened_img = flaten_img(prediction)
 
-    plt.figure('%s' %data_file)
-    plt.imshow(flatened_img, plt.cm.gray)
+    tag = np.random.randint(0,20,20)
+    tag[10:12] = 0
+    cmap = plt.cm.ocean
+    cmaplist = [cmap(i) for i in range(cmap.N)]
+    cmaplist[0] = (.5,.5,.5,1.0)
+    # create the new map
+    cmap = cmap.from_list('Custom cmap', cmaplist, cmap.N)
+    # define the bins and normalize
+    bounds = np.linspace(-1000,70000,21)
+    norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
+
+    
+    # # plt.figure('%s' %data_file)
+    depth_data = np.load(data_file)
+    # plt.figure('0')
+    # gci_0 = plt.imshow(depth_data)
+
+    corrected_depth_data = (depth_data ) * 2000
+    river_extraction_label = np.load('river_extraction.np.npy')
+    corrected_depth_data = np.multiply(river_extraction_label, corrected_depth_data)
+
+    xsize, ysize, raster_count, geo_data_loader = gdal_reader(GEO_TIFF_FILE)
+    geo_data = geo_data_loader()
+    band = np.copy(geo_data[90])
+    compound_img = band + 4000 + corrected_depth_data
+    compound_img = np.where(((compound_img>= -10000) & (compound_img < 70000)), compound_img, 0)
+
+    plt.figure('1')
+    # gci = plt.imshow(band)
+    gci = plt.imshow(compound_img, cmap=cmap, norm=norm)
+    cbar = plt.colorbar(gci) 
+    cbar.set_label('$Depth(m)$')  
+    cbar.set_ticks(np.linspace(3000, 70000, 8))  
+    cbar.set_ticklabels( ('0', '10', '20', '30', '40',  '50',  '60',  '70'))
+
+
+    # plt.figure('2')
+    # gci_1 = plt.imshow(band)
+    # cbar_1 = plt.colorbar(gci_1) 
+    # cbar_1.set_label('$Depth(m)$')  
+    # cbar_1.set_ticks(np.linspace(3000, 70000, 8))  
+    # cbar_1.set_ticklabels( ('0', '10', '20', '30', '40',  '50',  '60',  '70'))
+
+    # plt.imshow(depth_data, plt.cm.gray)
+    # plt.imshow(depth_data, plt.cm.gist_ncar)
+    # plt.imshow(compound_img)
     # plt.imshow(flatened_img, cmap=plt.cm.BuPu_r)
-    plt.imshow(flatened_img, cmap=plt.cm.tab10)
-    plt.colorbar()
+    # plt.imshow(flatened_img, cmap=plt.cm.tab10)
+    # plt.colorbar()
     plt.show()
 
 if __name__ == '__main__':
-    show('../out/model_predict.data.20190115_160145')
+    show('depth.img.npy')
 
