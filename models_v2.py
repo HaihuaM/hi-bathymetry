@@ -129,6 +129,89 @@ class Model1(object):
 
         self.train_step = tf.train.AdamOptimizer(self.learning_rate).minimize(self.mse)
 
+    def check_retune(self, checkpoint_dir):
+        checkpoint_dir_update = str()
+        if op.exists(checkpoint_dir):
+            if 'retune' in checkpoint_dir:
+                name_splitted = checkpoint_dir.split('_')
+                iteration_num = int(name_splitted[-1])
+                iteration_num += 1
+                prefix = name_splitted[0:-1]
+                prefix.append(str(iteration_num))
+                checkpoint_dir_update = '_'.join(prefix)
+            else:
+                checkpoint_dir_update = checkpoint_dir + '_retune_1'
+            return checkpoint_dir_update
+        else:
+            print("Error: %s not exists."%checkpoint_dir)
+            sys.exit(0)
+
+    def continue_on_train(self, checkpoint_dir, n_epoch, batch_size=64):
+        """
+        Base on previous training result, continue on training.
+        """
+        
+        self.tf_summary()
+        sess, saver = self.session_restore(checkpoint_dir) 
+        result = str()
+        checkpoint_dir_update = self.check_retune(checkpoint_dir)
+
+        train_writer = tf.summary.FileWriter(checkpoint_dir_update + '/plot_train', sess.graph)
+        test_writer = tf.summary.FileWriter(checkpoint_dir_update + '/plot_test')
+        
+        for epoch in tqdm(range(n_epoch)):
+            start_time = time.time()
+            batch_train_mse, batch_test_mse, n_batch = 0, 0, 0
+            for x_train_a, y_train_a in self.minibatches(self.train_features, self.train_labels, batch_size, shuffle=True):
+                sess.run(
+                        self.train_step, 
+                        feed_dict={
+                            self.features: x_train_a, 
+                            self.label: y_train_a, 
+                            self.keep_prob: 0.7})
+
+                fetch = {
+                        "merged": self.merged,
+                        "loss": self.mse
+                        }
+
+
+                _train_result = sess.run(fetch,
+                        feed_dict={self.features: x_train_a,
+                            self.label: y_train_a,
+                            self.keep_prob: 1.0})
+
+                _test_result = sess.run(fetch,
+                        feed_dict={self.features: self.test_features,
+                            self.label: self.test_labels,
+                            self.keep_prob: 1.0})
+
+                train_writer.add_summary(_train_result['merged'], epoch)
+                train_writer.flush()
+                test_writer.add_summary(_test_result['merged'], epoch)
+                test_writer.flush()
+
+                _train_mse = _train_result['loss']
+                _test_mse = _test_result['loss']
+
+                batch_train_mse += _train_mse
+                batch_test_mse += _test_mse
+                n_batch += 1
+                train_mse = batch_train_mse / n_batch
+                test_mse = batch_test_mse / n_batch
+
+
+
+            print('Train-Scope-MSE:', train_mse )  
+            print('Test-Scope-MSE:', test_mse)  
+            QoR = ' '.join(['Train-Scope-MSE:', str(train_mse), 'Test-Scope-MSE:', str(test_mse)])
+
+
+        self.info_collector['QoR'] = QoR
+        self.info_collector['Epoch'] = epoch
+        
+        saver.save(sess, op.join(checkpoint_dir_update, self.model_name))
+        self.record_result(checkpoint_dir_update)
 
     def tf_summary(self):
         tf.summary.scalar('mse', self.mse)
@@ -220,6 +303,18 @@ class Model1(object):
         saver.save(sess, op.join('.', checkpoint_dir, self.model_name))
         self.record_result(checkpoint_dir)
 
+    def session_restore(self, checkpoint_dir):
+        """
+        Restore a session
+        """
+        sess = tf.Session()
+        saver = tf.train.Saver( tf.trainable_variables())
+        sess.run(tf.global_variables_initializer())
+        
+        model_path = self.get_model_path(checkpoint_dir)
+        saver.restore(sess, model_path)
+        return sess, saver
+
     def record_result(self, checkpoint_dir):
         result = str(self.info_collector)
         self.dump_result(checkpoint_dir, result)
@@ -270,7 +365,7 @@ class Model2(Model1):
 
     def setup_cnn_model(self):
 
-        input_layer = tf.reshape(self.features, [-1, 11, 30, 1])
+        input_layer = tf.reshape(self.features, [-1, 330, 1])
         
         # conv1 layer 
         W_conv1 = self.weight_variable([2, 1, 32]) 
@@ -354,7 +449,7 @@ class Model2(Model1):
         sess, saver = self.session_restore(checkpoint_dir)
         prediction_value = sess.run(self.prediction,
                     feed_dict={ 
-                        self.xs: self.test_x,
+                        self.features: self.test_features,
                         self.keep_prob: 1.0})  
         return prediction_value
 
@@ -364,6 +459,7 @@ if __name__ == '__main__':
     data_path = "../out/extract_pixel_value.data.20190217_143517"
     depth_path = "../out/filterd_depth.info.20190217_125210"
 
-    model = Model1(data_path, depth_path)
+    # model = Model1(data_path, depth_path)
+    model = Model2(data_path, depth_path)
     model.setup_cnn_model()
     model.train()

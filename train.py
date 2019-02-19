@@ -14,11 +14,11 @@ from global_envs import *
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 from sklearn import preprocessing
-from utility import time_stamp, LQueue
+from utility import time_stamp, LQueue, debug_print
 # from models import Model1, Model2, Model3, Model4, Model5, Model6
-from models import *
-# from models_v2 import Model1
-from models import Model1
+# from models import *
+from models_v2 import *
+# from models import Model1
 import matplotlib.pyplot as plt
 
 
@@ -77,44 +77,40 @@ def data_load_func3(data_file):
     return train_x, test_x, train_y, test_y
 
 def model_retune(Model, checkpoint_dir):
-    func2_point_data = "extract_pixel_value_func2.data.20190107_043546"
-    data_load_func2 = data_load_func1
-    train_x, test_x, train_y, test_y = data_load_func2(func2_point_data)
-    # checkpoint_dir = "func2_checkpoint_dir_5000_0.001_20190107_044853"
-    model = Model(train_x, test_x, train_y, test_y, 0.001)
-    # sys.exit(0)
-    model.setup_net()
-    # model.train(ex_name='func2')
-    model.continue_on_train(checkpoint_dir, 100)
+
+    data_path = "../out/extract_pixel_value.data.20190217_143517"
+    depth_path = "../out/filterd_depth.info.20190217_125210"
+    model = Model(data_path, depth_path)
+    model.setup_cnn_model()
+    model.continue_on_train(checkpoint_dir, 500)
 
 def model_loader(Model):
-    func2_point_data = "extract_pixel_value_func2.data.20190107_043546"
-    # func2_point_data = "../legacy_data/averaged_points.info"
-    data_load_func2 = data_load_func1
-    train_x, test_x, train_y, test_y = data_load_func2(func2_point_data)
-    model = Model(train_x, test_x, train_y, test_y, 0.001)
-    # model.setup_net()
-    model.setup_net()
-    model.train(ex_name='func2', epoch_limit=8000)
+
+    data_path = "../out/extract_pixel_value.data.20190217_143517"
+    depth_path = "../out/filterd_depth.info.20190217_125210"
+    model = Model(data_path, depth_path)
+    model.setup_cnn_model()
+    model.train()
 
 def model_predict(Model, checkpoint_dir):
-    func2_point_data = "extract_pixel_value_func2.data.20190107_043546"
-    data_load_func2 = data_load_func1
-    train_x, test_x, train_y, test_y = data_load_func2(func2_point_data)
-    # checkpoint_dir = "func2_checkpoint_dir_5000_0.001_20190107_044853"
-    # print(train_x.shape)
-    model = Model(train_x, test_x, train_y, test_y, 0.0005)
-    # sys.exit(0)
-    model.setup_net()
+    data_path = "../out/extract_pixel_value.data.20190217_143517"
+    depth_path = "../out/filterd_depth.info.20190217_125210"
+    
+    model = Model(data_path, depth_path)
+    model.setup_cnn_model()
     # model.train(ex_name='func2')
-    prediction_value = model.test_predict(checkpoint_dir)
-    print(prediction_value['losses'])
-    print(prediction_value['prediction'].shape)
-    print(test_y.shape)
-    # print(test_y)
+    prediction_value = model.predict(checkpoint_dir)
+    prediction_value = np.squeeze(prediction_value)
+    labels = np.squeeze(model.test_labels)
+
+    predict_list = list()
+    labels_list = list()
+    # debug_print(prediction_value)
     index = 0
-    for i in range(0, len(test_y)):
-        print(prediction_value['prediction'][i], test_y[i], prediction_value['prediction'][i] - test_y[i])
+    for i in range(0, len(model.test_labels)):
+        prediction_value[i])
+        int(model.test_labels[i])
+    
     
     return prediction_value
 
@@ -126,7 +122,10 @@ def train_func():
     # model_loader(Model4)
     # model_loader(Model5)
     # model_loader(Model6)
-    model_loader(Model10)
+    # model_loader(Model2)
+    # model_predict(Model2, 'Model2_20190218_205754')
+    # model_retune(Model2, 'Model2_20190218_205754')
+    model_retune(Model2, 'Model2_20190218_205754_retune_2')
     # prediction_value = model_predict(Model1, 'Model1_func2_20190115_144146')
     # print(prediction_value)
 
