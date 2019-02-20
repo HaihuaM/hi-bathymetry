@@ -13,10 +13,27 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from coordinate_transform import gdal_reader, load_depth_data_parser, obj_dump
+from extract_features import load_pickle_obj
 
 global GEO_TIFF_FILE 
 global DEPTH_DATA_PATH
 global OUTPUT_PATH
+
+
+def check_result():
+
+    labels_file = op.join(OUTPUT_PATH, 'label.info.20190220_084456')
+    predict_file = op.join(OUTPUT_PATH, 'predict.info.20190220_084456')
+    labels_list = load_pickle_obj(labels_file)
+    predict_list = load_pickle_obj(predict_file)
+    plt.figure(figsize=(10,5))
+    temp_len = 200
+    x = range(len(predict_list[0:temp_len]))
+    print(labels_list[0:50])
+    print(predict_list[0:50])
+    # plt.plot(x, predict_list[0:temp_len], color='g')
+    # plt.plot(x, labels_list[0:temp_len], color='r')
+    # plt.show()
 
 
 def flaten_img(img, min_margin = -40, max_margin = 70, gap = 10):
@@ -89,5 +106,6 @@ def show(data_file=None):
     plt.show()
 
 if __name__ == '__main__':
-    show('depth.img.npy')
+    # show('depth.img.npy')
+    check_result()
 
