@@ -31,8 +31,12 @@ def load_data(data_path, depth_path):
     _labels = np.array(_labels)
     labels = np.expand_dims(_labels, axis=1)
 
-    train_features, test_features, train_labels, test_labels = train_test_split(features, labels, train_size=0.8, random_state=33)
+    # train_features, test_features, train_labels, test_labels = train_test_split(features, labels, train_size=0.8, random_state=33)
     # debug_print(train_labels.shape)
+    train_features = features
+    test_features = features
+    train_labels = labels
+    test_labels = labels
 
     return train_features, test_features, train_labels, test_labels
 
