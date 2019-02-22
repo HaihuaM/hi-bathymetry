@@ -21,16 +21,18 @@ tf.logging.set_verbosity(tf.logging.INFO)
 class Model1(object):
 
     def __init__(self,
-            data_path,
-            depth_path,
-            params=None):
+            data_path=None,
+            depth_path=None,
+            params=None,
+            no_data_loader=False):
 
         self.info_collector = dict()
         self.model_name = self.__class__.__name__
-        self.data_path = data_path
-        self.depth_path = depth_path
-        self.train_features, self.test_features, self.train_labels, self.test_labels = load_data(data_path, depth_path)
-        self.pre_process()
+        if no_data_loader:
+            pass
+        else:
+            self.train_features, self.test_features, self.train_labels, self.test_labels = load_data(data_path, depth_path)
+            self.pre_process()
         self.features = tf.placeholder(tf.float32, [None, 330])
         self.label = tf.placeholder(tf.float32, [None, 1])
         self.keep_prob = tf.placeholder(tf.float32)
