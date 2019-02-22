@@ -82,7 +82,7 @@ def model_retune(Model, checkpoint_dir):
     depth_path = "../out/filterd_depth.info.20190217_125210"
     model = Model(data_path, depth_path)
     model.setup_cnn_model()
-    model.continue_on_train(checkpoint_dir, 500)
+    model.continue_on_train(checkpoint_dir, 1000)
 
 def model_loader(Model):
 
@@ -90,7 +90,7 @@ def model_loader(Model):
     depth_path = "../out/filterd_depth.info.20190217_125210"
     model = Model(data_path, depth_path)
     model.setup_cnn_model()
-    model.train()
+    model.train(2000)
 
 def model_predict(Model, checkpoint_dir):
     data_path = "../out/extract_pixel_value.data.20190217_143517"
@@ -106,10 +106,10 @@ def model_predict(Model, checkpoint_dir):
     predict_list = list()
     labels_list = list()
     # debug_print(prediction_value)
-    index = 0
-    for i in range(0, len(model.test_labels)):
-        prediction_value[i])
-        int(model.test_labels[i])
+    # index = 0
+    # for i in range(0, len(model.test_labels)):
+        # prediction_value[i])
+        # int(model.test_labels[i])
     
     
     return prediction_value
@@ -125,7 +125,7 @@ def train_func():
     # model_loader(Model2)
     # model_predict(Model2, 'Model2_20190218_205754')
     # model_retune(Model2, 'Model2_20190218_205754')
-    model_retune(Model2, 'Model2_20190218_205754_retune_2')
+    model_retune(Model2, 'Model2_20190219_143221_retune_8')
     # prediction_value = model_predict(Model1, 'Model1_func2_20190115_144146')
     # print(prediction_value)
 
