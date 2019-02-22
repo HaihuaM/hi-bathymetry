@@ -22,15 +22,18 @@ global OUTPUT_PATH
 
 def check_result():
 
-    labels_file = op.join(OUTPUT_PATH, 'label.info.20190220_084456')
-    predict_file = op.join(OUTPUT_PATH, 'predict.info.20190220_084456')
-    labels_list = load_pickle_obj(labels_file)
-    predict_list = load_pickle_obj(predict_file)
-    plt.figure(figsize=(10,5))
-    temp_len = 200
-    x = range(len(predict_list[0:temp_len]))
-    print(labels_list[0:50])
-    print(predict_list[0:50])
+    orig_labels_file = op.join(OUTPUT_PATH, 'filterd_depth.info.20190217_125210')
+    # labels_file = op.join(OUTPUT_PATH, 'label.info.20190220_084456')
+    # predict_file = op.join(OUTPUT_PATH, 'predict.info.20190220_084456')
+    orig_labels_list = load_pickle_obj(orig_labels_file)
+    # labels_list = load_pickle_obj(labels_file)
+    # predict_list = load_pickle_obj(predict_file)
+    # plt.figure(figsize=(10,5))
+    # temp_len = 200
+    # x = range(len(predict_list[0:temp_len]))
+    print(orig_labels_list[0:50])
+    # print(labels_list[0:50])
+    # print(predict_list[0:50])
     # plt.plot(x, predict_list[0:temp_len], color='g')
     # plt.plot(x, labels_list[0:temp_len], color='r')
     # plt.show()
