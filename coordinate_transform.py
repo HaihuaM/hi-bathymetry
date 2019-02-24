@@ -156,7 +156,7 @@ def load_depth_data_coordinate(coordinates, depths, patch_size=0):
 
     return index_list, depth_list
         
-def build_patch(index, patch_size=0):
+def build_patch(index,max_index, patch_size=0):
     """
     Function: Build path index
     parameters: one coord, patch size
@@ -164,8 +164,34 @@ def build_patch(index, patch_size=0):
     """
     index_y =  index[0]
     index_x =  index[1]
-    patch_x_list = numpy.arange(-patch_size, patch_size+1, 1) + index_x
-    patch_y_list = numpy.arange(-patch_size, patch_size+1, 1) + index_y
+    max_y_index = max_index[0]
+    max_x_index = max_index[1]
+
+    patch_x_index_list = numpy.arange(-patch_size, patch_size+1, 1) + index_x
+    patch_y_index_list = numpy.arange(-patch_size, patch_size+1, 1) + index_y
+
+    corrected_patch_x_list = list()
+    corrected_patch_y_list = list()
+
+    for x in patch_x_index_list:
+        if x < 0:
+            corrected_patch_x_list.append(-x)
+        elif x > max_x_index:
+            corrected_patch_x_list.append(2*max_x_index-x)
+        else:
+            corrected_patch_x_list.append(x)
+
+    for y in patch_y_index_list:
+        if y < 0:
+            corrected_patch_y_list.append(-y)
+        elif y > max_y_index:
+            corrected_patch_y_list.append(2*max_y_index-y)
+        else:
+            corrected_patch_y_list.append(y)
+
+    patch_x_list = numpy.array(corrected_patch_x_list)
+    patch_y_list = numpy.array(corrected_patch_y_list)
+
     return numpy.dstack(numpy.meshgrid(patch_y_list, patch_x_list))
 
 def test_build_patch():

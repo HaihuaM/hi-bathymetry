@@ -120,7 +120,7 @@ def _show(data_file=None):
     fig, axs = plt.subplots(nrows=1, ncols=1)
     # axs = _axs.flatten()
 
-    levels = range(0, 60, 5)
+    levels = range(0, 60, 2)
     cset1 = axs.contourf(Z, levels, origin='upper', norm=norm, cmap=cm.get_cmap(cmap, len(levels) - 1))
     fig.colorbar(cset1, ax=axs)
     plt.show()
@@ -177,6 +177,7 @@ def show(data_file=None):
 
 if __name__ == '__main__':
     # show('model_predict.data.20190220_210542')
-    _show('model_predict.data.20190220_210542')
+    # _show('model_predict.data.20190220_210542')
+    _show('model_predict.data.20190222_082124')
     # check_result()
 
