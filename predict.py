@@ -69,8 +69,11 @@ def model_predict(Model, checkpoint_dir):
 
     # xsize, ysize, raster_count, geo_data_loader = gdal_reader(GEO_TIFF_FILE)
     # geo_data = geo_data_loader()
-    geo_data = np.load('conv.data.npy')
-    debug_print(geo_data.shape)
+    # geo_data = np.load('conv.data.npy')
+    # debug_print(geo_data.shape)
+    # raster_count, ysize, xsize = geo_data.shape
+    geo_data = np.memmap('conv.data.npy', dtype='int64', mode="r", shape=(330, 2166, 1983))
+    
     raster_count, ysize, xsize = geo_data.shape
 
     features = np.zeros([ysize,xsize,raster_count])
@@ -79,6 +82,7 @@ def model_predict(Model, checkpoint_dir):
 
     del geo_data
     debug_print(features.shape)
+    debug_print(features[1, 1, :])
     sys.exit(0)
     
     

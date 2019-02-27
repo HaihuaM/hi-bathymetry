@@ -49,7 +49,6 @@ def model_predict(Model, checkpoint_dir):
     model = Model(data_path, depth_path)
     debug_print(model.train_features.shape)
 
-    sys.exit(0)
     model.setup_cnn_model()
     
     prediction_value = model.predict(checkpoint_dir)
@@ -79,7 +78,7 @@ def train_func():
     # model_loader(Model5)
     # model_loader(Model6)
     # model_loader(Model2)
-    model_predict(Model2, 'Model2_20190218_205754_retune_3')
+    model_predict(Model2, 'Model2_20190219_143221_retune_9')
     # model_retune(Model2, 'Model2_20190218_205754')
     # prediction_value = model_predict(Model1, 'Model1_func2_20190115_144146')
     # print(prediction_value)

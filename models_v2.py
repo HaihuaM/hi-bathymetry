@@ -235,7 +235,7 @@ class Model1(object):
         train_mse_his = LQueue(qlen)
         test_mse_his = LQueue(qlen)
 
-        checkpoint_dir = "_".join([self.model_name, time_info])
+        checkpoint_dir = op.join('check_points', "_".join([self.model_name, time_info]))
 
         train_writer = tf.summary.FileWriter(checkpoint_dir + '/plot_train', sess.graph)
         test_writer = tf.summary.FileWriter(checkpoint_dir + '/plot_test')
@@ -302,7 +302,7 @@ class Model1(object):
         self.info_collector['QoR'] = QoR
         self.info_collector['Epoch'] = n_epoch
             
-        saver.save(sess, op.join('.', checkpoint_dir, self.model_name))
+        saver.save(sess, op.join(checkpoint_dir, self.model_name))
         self.record_result(checkpoint_dir)
 
     def session_restore(self, checkpoint_dir):

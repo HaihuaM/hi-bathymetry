@@ -11,6 +11,7 @@ from global_envs import *
 from utility import debug_print
 from osgeo import gdal
 from tqdm import tqdm
+from glob import glob
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from coordinate_transform import gdal_reader, load_depth_data_parser, obj_dump
@@ -28,28 +29,60 @@ global OUTPUT_PATH
 
 def check_result():
 
-    labels_file = op.join(OUTPUT_PATH, 'label.info.20190220_104212')
-    predict_file = op.join(OUTPUT_PATH, 'predict.info.20190220_104212')
+    labels_file = op.join(OUTPUT_PATH, 'label.info.20190225_115340')
+    predict_file = op.join(OUTPUT_PATH, 'predict.info.20190225_115340')
     labels_list = load_pickle_obj(labels_file)
     predict_list = load_pickle_obj(predict_file)
-    # debug_print(len(labels_list))
-    # debug_print(len(predict_list))
+
+    depth_file_path = "../orig_data/data.depth/depth_serial"
+    depth_file_list = glob(op.join(depth_file_path, "*.txt"))
+    file_cnts = len(depth_file_list)
+    len_list = list()
+    for i in range(1, file_cnts+1):
+        # debug_print(i)
+        _depth_file = op.join(depth_file_path, str(i)+".txt")
+        file_handle = open(_depth_file)
+        sample_cnt = len(file_handle.readlines())
+        len_list.append(sample_cnt)
+
+    prev_len = 0
+    index = 0
+    for item in tqdm(len_list):
+        index += 1
+        pic_name = "fracture_surface_" + str(index) + '.png'
+        pic_path = op.join('../out/predict/pictures/', pic_name)
+        plt.figure(pic_name)
+
+        predict = predict_list[prev_len:prev_len+item]
+        labels = labels_list[prev_len:prev_len+item]
+        predict = runningMeanFast(predict, 10)
+        labels = runningMeanFast(labels, 10)
+        # errors = list(map(lambda x: x[0] - x[1], zip(predict, labels)))
+        errors = predict - labels
+        errors = runningMeanFast(errors, 10)
+        x = range(len(predict))
+        
+        fig, ax = plt.subplots()
+        plt.ylabel('Height (m)')
+        plt.grid(True)
+        plt.title('The %sth fracture surface'%index)
+
+        ax.plot(x, predict,  label='Prediction Value', color='g')
+        ax.plot(x, labels,   label='Ground Truth', color='r')
+        ax.plot(x, errors,   label='Errors', color='y')
+        # legend = ax.legend(loc='upper right', shadow=True, fontsize='x-large')
+        legend = ax.legend(loc='upper right', shadow=True)
+        legend.get_frame().set_facecolor('C2')
+
+        prev_len += item
+        plt.savefig(pic_path)
+        plt.close()
+        # plt.show()
+
+def runningMeanFast(x, N):
+    # return np.convolve(x, np.ones((N,))/(N*2))[(N-1):]
+    return np.convolve(x, np.ones((N,))/N)[(N-1):]
     
-    # plt.figure(figsize=(10,5))
-    temp_len = 1000
-    x = range(len(predict_list[0:temp_len]))
-    # print(labels_list[0:50])
-    # print(predict_list[0:50])
-    # results = str()
-    # for i in range(len(labels_list)):
-    #     results += "%s %s\n"%(labels_list[i], predict_list[i])
-    # with open('debug.result.all', 'w+') as f:
-    #     f.write(results)
-
-    plt.plot(x, predict_list[0:temp_len], color='g')
-    plt.plot(x, labels_list[0:temp_len], color='r')
-    plt.show()
-
 
 def flaten_img(img, min_margin = -40, max_margin = 70, gap = 20):
     flatened_img = np.where(((img>= min_margin) & (img < max_margin)), img, min_margin)
@@ -178,6 +211,6 @@ def show(data_file=None):
 if __name__ == '__main__':
     # show('model_predict.data.20190220_210542')
     # _show('model_predict.data.20190220_210542')
-    _show('model_predict.data.20190222_082124')
-    # check_result()
+    # _show('model_predict.data.20190222_082124')
+    check_result()
 
